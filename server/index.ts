@@ -1,10 +1,11 @@
 import "dotenv/config";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { sql } from "drizzle-orm";
 import tasksApi from "./routes/tasks";
 import statsApi from "./routes/stats";
 import authApi from "./routes/auth";
-import { db, client } from "./db";
+import { db } from "./db";
 
 const app = new Hono();
 
@@ -15,7 +16,7 @@ app.use("/api/*", cors({
 
 app.get("/api/health", async (c) => {
   try {
-    await client.execute("SELECT 1");
+    await db.run(sql`SELECT 1`);
     return c.json({ status: "ok", database: "connected" });
   } catch {
     return c.json({ status: "ok", database: "disconnected" }, 503);
@@ -27,9 +28,12 @@ app.route("/api/tasks", tasksApi);
 app.route("/api/stats", statsApi);
 
 const port = parseInt(process.env.PORT || "3000");
-console.log(`Servidor iniciado en http://localhost:${port}`);
 
-export default {
-  port,
-  fetch: app.fetch,
-};
+if (process.versions?.bun) {
+  Bun.serve({ port, fetch: app.fetch });
+} else {
+  const { serve } = await import("@hono/node-server");
+  serve({ fetch: app.fetch, port });
+}
+
+console.log(`Servidor iniciado en http://localhost:${port}`);
