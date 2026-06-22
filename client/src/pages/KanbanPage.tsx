@@ -1,0 +1,123 @@
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { useTasks } from "../hooks/useTasks";
+import { KanbanColumn } from "../components/kanban/KanbanColumn";
+import { TaskForm } from "../components/tasks/TaskForm";
+import { TaskDetail } from "../components/tasks/TaskDetail";
+import { DeleteConfirm } from "../components/tasks/DeleteConfirm";
+import { Modal } from "../components/ui/Modal";
+import { LoadingSpinner } from "../components/ui/Loading";
+import type { Task, CreateTaskInput, UpdateTaskInput, TaskStatus } from "../../../shared/task.types";
+
+export default function KanbanPage() {
+  const { tasks, loading, createTask, updateTask, deleteTask, changeTaskStatus } = useTasks();
+  const [showCreate, setShowCreate] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null);
+
+  const columns = [
+    {
+      title: "Pendiente",
+      status: "pending" as TaskStatus,
+      tasks: tasks.filter((t) => t.status === "pending"),
+      color: "bg-yellow-500",
+    },
+    {
+      title: "En progreso",
+      status: "in_progress" as TaskStatus,
+      tasks: tasks.filter((t) => t.status === "in_progress"),
+      color: "bg-blue-500",
+    },
+    {
+      title: "Completada",
+      status: "completed" as TaskStatus,
+      tasks: tasks.filter((t) => t.status === "completed"),
+      color: "bg-green-500",
+    },
+  ];
+
+  async function handleCreate(data: CreateTaskInput) {
+    await createTask(data);
+    setShowCreate(false);
+  }
+
+  async function handleUpdate(data: CreateTaskInput) {
+    if (!editingTask) return;
+    await updateTask(editingTask.id, data as UpdateTaskInput);
+    setEditingTask(null);
+  }
+
+  async function handleDelete() {
+    if (!deletingTask) return;
+    await deleteTask(deletingTask.id);
+    setDeletingTask(null);
+  }
+
+  async function handleStatusChange(id: string, status: TaskStatus) {
+    await changeTaskStatus(id, status);
+  }
+
+  if (loading) return <LoadingSpinner />;
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tablero Kanban</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Arrastra visualmente las tareas por estado
+          </p>
+        </div>
+        <button onClick={() => setShowCreate(true)} className="btn btn-primary">
+          <Plus size={18} />
+          Nueva tarea
+        </button>
+      </div>
+
+      <div className="flex gap-6 overflow-x-auto pb-4">
+        {columns.map((col) => (
+          <KanbanColumn
+            key={col.status}
+            title={col.title}
+            status={col.status}
+            tasks={col.tasks}
+            color={col.color}
+            onView={(task) => setViewingTask(task)}
+            onEdit={(task) => setEditingTask(task)}
+            onDelete={(task) => setDeletingTask(task)}
+            onStatusChange={handleStatusChange}
+          />
+        ))}
+      </div>
+
+      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Nueva tarea">
+        <TaskForm onSave={handleCreate} onCancel={() => setShowCreate(false)} />
+      </Modal>
+
+      <Modal open={!!editingTask} onClose={() => setEditingTask(null)} title="Editar tarea">
+        {editingTask && <TaskForm task={editingTask} onSave={handleUpdate} onCancel={() => setEditingTask(null)} />}
+      </Modal>
+
+      <Modal open={!!viewingTask} onClose={() => setViewingTask(null)} title="Detalle de tarea" size="sm">
+        {viewingTask && (
+          <TaskDetail
+            task={viewingTask}
+            onEdit={() => {
+              const t = viewingTask;
+              setViewingTask(null);
+              setEditingTask(t);
+            }}
+            onClose={() => setViewingTask(null)}
+          />
+        )}
+      </Modal>
+
+      <Modal open={!!deletingTask} onClose={() => setDeletingTask(null)} title="Eliminar tarea" size="sm">
+        {deletingTask && (
+          <DeleteConfirm taskTitle={deletingTask.title} onConfirm={handleDelete} onCancel={() => setDeletingTask(null)} />
+        )}
+      </Modal>
+    </div>
+  );
+}
