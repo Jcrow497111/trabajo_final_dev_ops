@@ -1,11 +1,10 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+set -e
 
-echo "========================================"
-echo "  Task Manager — Pruebas"
-echo "========================================"
-
-echo "Ejecutando pruebas con Vitest..."
-echo ""
+echo "======================================"
+echo " Ejecución de pruebas"
+echo "======================================"
 
 bun run test
+
+echo "Pruebas finalizadas correctamente."

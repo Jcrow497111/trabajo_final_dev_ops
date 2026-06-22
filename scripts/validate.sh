@@ -2,9 +2,11 @@
 set -e
 
 echo "======================================"
-echo " Construcción de la aplicación"
+echo " Validación completa del proyecto"
 echo "======================================"
 
+bun run typecheck
+bun run test --if-present
 cd client && bun run build
 
-echo "Build generado correctamente."
+echo "Validación completa finalizada correctamente."

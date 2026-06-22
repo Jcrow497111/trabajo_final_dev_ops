@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 import { db, schema } from "../db";
 
 const registerSchema = z.object({
@@ -35,7 +36,7 @@ authApi.post("/register", async (c) => {
     }
 
     const id = crypto.randomUUID();
-    const passwordHash = await Bun.password.hash(parsed.data.password);
+    const passwordHash = await bcrypt.hash(parsed.data.password, 10);
     const sessionToken = crypto.randomUUID();
     const now = new Date().toISOString();
 
@@ -77,7 +78,7 @@ authApi.post("/login", async (c) => {
     }
 
     const user = users[0];
-    const valid = await Bun.password.verify(parsed.data.password, user.passwordHash);
+    const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
     if (!valid) {
       return c.json({ error: "Credenciales inválidas" }, 401);
     }

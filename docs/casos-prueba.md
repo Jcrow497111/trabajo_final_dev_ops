@@ -1,4 +1,4 @@
-# Casos de Prueba — Task Manager
+# Casos de Prueba — TaskFlow
 
 | ID | Tipo | Descripción | Entrada | Resultado Esperado | Estado |
 |----|------|-------------|---------|--------------------|--------|

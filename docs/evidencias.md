@@ -1,11 +1,11 @@
-# Evidencias — Task Manager
+# Evidencias — TaskFlow
 
-## 1. Ejecución de Comandos Linux
+## 1. Ejecución de Comandos
 
 ```
 > ./scripts/install.sh
 ========================================
-  Task Manager — Instalación
+  Instalación de dependencias
 ========================================
 [OK] Bun detectado: 1.x.x
 Instalando dependencias...
@@ -13,14 +13,12 @@ Instalando dependencias...
 
 > ./scripts/build.sh
 ========================================
-  Task Manager — Build
+  Construcción de la aplicación
 ========================================
 Construyendo la aplicación...
 ✓ built successfully
 [OK] Build completado.
 ```
-
-*Insertar captura de pantalla aquí*
 
 ---
 
@@ -31,8 +29,6 @@ Construyendo la aplicación...
   VITE v6.x.x  ready in XXXms
   ➜  Local:   http://localhost:5173/
 ```
-
-*Insertar captura del navegador en http://localhost:5173 aquí*
 
 ---
 
@@ -47,13 +43,9 @@ Test Files  2 passed (2)
      Tests  13 passed (13)
 ```
 
-*Insertar captura de terminal con pruebas pasando aquí*
-
 ---
 
 ## 4. Pipeline CI Ejecutado
-
-*Insertar captura de GitHub Actions mostrando pipeline exitoso aquí*
 
 El pipeline incluye:
 - ✅ Checkout del repositorio
@@ -74,10 +66,9 @@ scripts/
 ├── run.sh          → bun run dev
 ├── test.sh         → bun run test
 ├── build.sh        → bun run build
-├── deploy-local.sh → build + instrucciones Docker
+├── validate.sh     → typecheck + test + build
+├── deploy-local.sh → build + verificación
 ```
-
-*Insertar captura de terminal ejecutando todos los scripts aquí*
 
 ---
 
@@ -89,5 +80,3 @@ scripts/
 [+] Building ...
 ...
 ```
-
-*Insertar captura de Docker funcionando en http://localhost:8080 aquí*

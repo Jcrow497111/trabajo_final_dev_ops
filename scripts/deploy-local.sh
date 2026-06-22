@@ -1,22 +1,16 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+set -e
 
-echo "========================================"
-echo "  Task Manager — Deploy Local"
-echo "========================================"
+echo "======================================"
+echo " Simulación de despliegue local"
+echo "======================================"
 
-echo "Paso 1: Construyendo la aplicación..."
-bun run build
+cd client && bun run build
 
-echo ""
-echo "Paso 2: Despliegue simulado completado."
-echo ""
-echo "  El contenido de 'dist/' puede servirse con:"
-echo "    docker compose up --build"
-echo "  o con un servidor estático:"
-echo "    npx serve dist"
-echo ""
-echo "  Puerto (Docker): http://localhost:8080"
-echo ""
-
-echo "[OK] Deploy local finalizado."
+if [ -d "client/dist" ] || [ -d "dist" ]; then
+  echo "Artefacto de producción generado correctamente."
+  echo "El sistema está listo para ser servido en un ambiente de producción."
+else
+  echo "Error: no se encontró la carpeta dist."
+  exit 1
+fi

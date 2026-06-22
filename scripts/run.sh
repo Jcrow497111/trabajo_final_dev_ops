@@ -1,12 +1,11 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+set -e
 
-echo "========================================"
-echo "  Task Manager — Ejecución"
-echo "========================================"
+echo "======================================"
+echo " Ejecución del sistema Task Manager"
+echo "======================================"
 
-echo "Iniciando servidor de desarrollo..."
-echo "  URL local: http://localhost:5173"
-echo ""
+echo "Frontend esperado: http://localhost:5173"
+echo "Backend esperado: http://localhost:3000/api/health"
 
 bun run dev

@@ -1,8 +1,8 @@
-# Plan de Pruebas — Task Manager
+# Plan de Pruebas — TaskFlow
 
 ## Alcance
 
-Validar el correcto funcionamiento de la aplicación Task Manager en sus operaciones CRUD, cambios de estado, filtros, búsqueda y manejo de errores.
+Validar el correcto funcionamiento de la aplicación TaskFlow en sus operaciones CRUD, cambios de estado, filtros, búsqueda y manejo de errores.
 
 ## Tipos de Pruebas
 
@@ -29,7 +29,3 @@ Validar el correcto funcionamiento de la aplicación Task Manager en sus operaci
 - **React Testing Library:** Pruebas de componentes
 - **@testing-library/user-event:** Simulación de interacciones de usuario
 - **jsdom:** Entorno DOM para pruebas
-
-## Responsables
-
-- Desarrollador / Estudiante de DevOps + V&V

@@ -4,19 +4,19 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "bun run --parallel dev:client dev:server",
-    "dev:client": "cd client && bun run dev",
-    "dev:server": "bun run --watch server/index.ts",
-    "build": "bun --cwd client run build",
-    "start": "bun --cwd server run start",
+    "dev": "concurrently -n client,server -c cyan,green \"vite client\" \"tsx watch server/index.ts\"",
+    "build": "vite build client",
+    "start": "tsx server/index.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:seed": "bun run server/db/seed.ts",
+    "db:seed": "tsx server/db/seed.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -24,13 +24,16 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^10.0.3",
     "drizzle-kit": "^0.30.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
+    "tsx": "^4.22.4",
     "typescript": "~5.6.2",
     "vite": "^6.0.1"
   }
