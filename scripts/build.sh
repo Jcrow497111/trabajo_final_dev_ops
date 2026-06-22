@@ -5,6 +5,6 @@ echo "======================================"
 echo " Construcción de la aplicación"
 echo "======================================"
 
-cd client && bun run build
+bun run build
 
 echo "Build generado correctamente."
