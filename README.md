@@ -16,6 +16,16 @@ Aplicación web full-stack de gestión de tareas construida con **React + Hono +
 |-------------|-------|----------|
 | ![Estadísticas](screenshots/taskflow-stats.png) | ![Login](screenshots/taskflow-login.png) | ![Registro](screenshots/taskflow-register.png) |
 
+### Infraestructura y CI/CD
+
+| GitHub — Repositorio | GitHub — Actions CI |
+|----------------------|---------------------|
+| ![GitHub Repo](screenshots/github-repo.png) | ![GitHub Actions](screenshots/github-actions.png) |
+
+| Backend — Health Check |
+|------------------------|
+| ![Health](screenshots/backend-health.png) |
+
 ## Tecnologías
 
 | Tecnología | Propósito |
@@ -90,23 +100,82 @@ npm run dev
 | Frontend | http://localhost:5173 |
 | Backend | http://localhost:3000/api/health |
 
-## Scripts
+## Scripts de Automatización DevOps
 
-| Comando | Descripción |
-|---------|-------------|
-| `bun run dev` | Frontend + backend en desarrollo |
-| `bun run build` | Build de producción en `client/dist/` |
-| `bun run start` | Solo servidor API (standalone) |
-| `bun run typecheck` | Validar TypeScript |
-| `bun run db:migrate` | Ejecutar migraciones |
-| `bun run db:seed` | Datos de ejemplo |
+| Script | Descripción |
+|--------|-------------|
+| `./scripts/install.sh` | Verifica Bun instalado e instala dependencias |
+| `./scripts/run.sh` | Inicia frontend + backend en desarrollo |
+| `./scripts/test.sh` | Ejecuta la suite de pruebas |
+| `./scripts/build.sh` | Build de producción con Vite |
+| `./scripts/validate.sh` | Validación completa: typecheck → test → build |
+| `./scripts/deploy-local.sh` | Despliegue local con Docker Compose |
+| `./scripts/check.sh` | Verifica que los ambientes dev/test/prod respondan |
+| `./scripts/stop.sh` | Detiene todos los servicios |
+| `./scripts/run-env.sh` | Levanta entorno específico (dev\|test\|prod) en Docker |
 
 ## Validación
 
 ```bash
-bun run typecheck
-bun run build
+./scripts/validate.sh    # typecheck + tests + build
 ```
+
+## Flujo DevOps
+
+```
+                       ┌───────────────────────┐
+                       │   GitHub Push / PR     │
+                       └──────────┬────────────┘
+                                  ▼
+                   ┌─────────────────────────────┐
+                   │   GitHub Actions (CI)        │
+                   │   .github/workflows/ci.yml   │
+                   │                              │
+                   │   1. bun install             │
+                   │   2. bun run typecheck       │
+                   │   3. bun run test (27 tests) │
+                   │   4. bun run build           │
+                   │   5. Verificar client/dist/  │
+                   └─────────────────────────────┘
+                                  │
+                    ┌─────────────┴─────────────┐
+                    ▼                           ▼
+          ┌──────────────────┐      ┌──────────────────────┐
+          │  ./scripts/      │      │  Docker Producción    │
+          │  Automatización  │      │                      │
+          │  local           │      │  docker compose up    │
+          │                  │      │  Nginx → Hono → Turso│
+          │  install.sh      │      └──────────────────────┘
+          │  validate.sh     │
+          │  build.sh        │
+          │  deploy-local.sh │
+          └──────────────────┘
+```
+
+### Flujo de trabajo recomendado
+
+1. **Desarrollo local:** `./scripts/run.sh` o `bun run dev`
+2. **Validar cambios:** `./scripts/validate.sh` (typecheck + tests + build)
+3. **Commit y push:** El CI pipeline verifica automáticamente
+4. **Despliegue producción:** `./scripts/deploy-local.sh` o `docker compose up --build`
+
+### Resultados de pruebas
+
+```bash
+$ bun run test
+
+ ✓ client/src/tests/task-validation.test.tsx (13 tests)
+ ✓ client/src/tests/task-crud.test.tsx (14 tests)
+
+ Test Files  2 passed (2)
+      Tests  27 passed (27)
+```
+
+Los tests cubren:
+- **TaskTable** (7 tests): renderizado, badges de estado, acciones Ver/Eliminar
+- **TaskForm** (5 tests): validación de campos, envío con datos válidos, edición
+- **TaskFilters** (2 tests): búsqueda y filtro por estado
+- **Schemas compartidos** (13 tests): validación Zod de tipos de datos
 
 ## Producción (Docker)
 
@@ -283,31 +352,40 @@ docker compose down
 
 ```
 task-manager-devops-vv/
-├── .github/workflows/     # Pipeline CI
-├── client/                 # Frontend React (Vite)
+├── .github/workflows/      # Pipeline CI
+├── client/                  # Frontend React (Vite)
 │   └── src/
-│       ├── components/     # Componentes UI
-│       ├── pages/          # Páginas
-│       ├── context/        # Auth, Theme, Toast
-│       └── services/       # API client
-├── server/                 # Backend Hono
-│   ├── db/                 # Schema y migraciones
-│   ├── routes/             # auth, tasks, stats
-│   └── index.ts            # Entry point
-├── shared/                 # Tipos y esquemas compartidos
-├── infra/nginx/            # Configuración Nginx
-├── screenshots/            # Capturas de pantalla
-├── docs/                   # Documentación técnica
-├── Dockerfile              # Build frontend
-├── Dockerfile.api          # Build backend
-├── docker-compose.yml      # Orquestación
-└── package.json            # Dependencias y scripts
+│       ├── components/      # Componentes UI
+│       ├── pages/           # Páginas
+│       ├── context/         # Auth, Theme, Toast
+│       ├── services/        # API client
+│       └── tests/           # Tests unitarios
+├── server/                  # Backend Hono
+│   ├── db/                  # Schema y migraciones
+│   ├── routes/              # auth, tasks, stats
+│   └── index.ts             # Entry point
+├── shared/                  # Tipos y esquemas compartidos
+├── scripts/                 # 9 scripts de automatización DevOps
+├── infra/nginx/             # Configuración Nginx
+├── screenshots/             # 11 capturas de pantalla
+├── docs/                    # Documentación técnica
+├── vitest.config.ts         # Configuración de tests
+├── Dockerfile               # Build frontend multi-etapa
+├── Dockerfile.api           # Build backend
+├── docker-compose.yml       # Orquestación producción
+└── package.json             # Dependencias y scripts
 ```
 
 ## CI/CD
 
 GitHub Actions ejecuta en cada push:
-1. `bun install --frozen-lockfile`
-2. `bun run typecheck`
-3. `cd client && bun run build`
-4. Verifica artefacto en `client/dist/`
+
+```yaml
+# .github/workflows/ci.yml
+steps:
+  - bun install --frozen-lockfile
+  - bun run typecheck       # Validación de tipos
+  - bun run test            # 27 tests unitarios
+  - bun run build           # Build de producción
+  - Verificar client/dist/  # Artefacto generado
+```

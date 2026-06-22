@@ -131,9 +131,24 @@ Cada ambiente tiene su propio archivo `.env.*` con variables específicas (TURSO
 - **@testing-library/user-event**: Simulación de eventos de usuario
 - **jsdom**: Entorno DOM simulado para pruebas
 
-### Plan de ejecución
+### Resultados
 
-Las pruebas se definieron en el plan de pruebas (`docs/plan-pruebas.md`) y casos de prueba (`docs/casos-prueba.md`). Tras la migración a monorepo (cliente/servidor), los archivos de prueba deben re-implementarse en `client/src/tests/` para mantener la cobertura. El pipeline CI está configurado para ejecutar `bun run test` una vez que los tests estén disponibles.
+```
+> bun run test
+
+ ✓ client/src/tests/task-validation.test.tsx (13 tests)
+ ✓ client/src/tests/task-crud.test.tsx (14 tests)
+
+ Test Files  2 passed (2)
+      Tests  27 passed (27)
+```
+
+| Archivo | Tests | Cobertura |
+|---------|-------|-----------|
+| `client/src/tests/task-crud.test.tsx` | 14 | TaskTable (7), TaskForm (5), TaskFilters (2) |
+| `client/src/tests/task-validation.test.tsx` | 13 | Schemas Zod compartidos |
+
+Los tests se ejecutan automáticamente en cada push vía GitHub Actions y localmente con `./scripts/test.sh` o `bun run test`.
 
 ## 6. Resultados Obtenidos
 
@@ -152,6 +167,18 @@ Las pruebas se definieron en el plan de pruebas (`docs/plan-pruebas.md`) y casos
 → Artefacto generado en client/dist/
 ```
 
+### Pruebas unitarias
+
+```
+> bun run test
+
+ ✓ client/src/tests/task-validation.test.tsx (13 tests) 8ms
+ ✓ client/src/tests/task-crud.test.tsx (14 tests) 723ms
+
+ Test Files  2 passed (2)
+      Tests  27 passed (27)
+```
+
 ### Pipeline CI
 
 El pipeline de GitHub Actions ejecuta correctamente:
@@ -159,7 +186,7 @@ El pipeline de GitHub Actions ejecuta correctamente:
 - ✅ Configuración de Bun
 - ✅ Instalación de dependencias
 - ✅ Validación TypeScript
-- ⏳ Pruebas (pendiente de re-implementación post-migración)
+- ✅ Pruebas (27/27 tests pasan)
 - ✅ Build de producción
 - ✅ Verificación de artefacto
 
@@ -189,7 +216,6 @@ El pipeline de GitHub Actions ejecuta correctamente:
 - Las tareas no están asociadas a usuarios específicos (columna `user_id` existe pero no se usa en consultas)
 - No hay paginación en la lista de tareas
 - No hay recuperación de contraseña
-- Las pruebas unitarias se eliminaron durante la migración a monorepo; deben re-implementarse
 
 ### Mejoras propuestas
 
