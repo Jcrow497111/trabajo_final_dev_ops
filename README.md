@@ -110,29 +110,174 @@ bun run build
 
 ## Producción (Docker)
 
+La aplicación se despliega con dos contenedores coordinados por `docker-compose.yml`.
+
+### Arquitectura
+
+```
+                        docker-compose.yml
+┌──────────────────────────────────────────────────────┐
+│                                                      │
+│  Host:8080                                           │
+│      │                                               │
+│      ▼                                               │
+│  ┌──────────────────────┐     ┌──────────────────┐   │
+│  │   web (Nginx)        │     │  api (Bun+Hono)   │   │
+│  │                      │     │                   │   │
+│  │  / → index.html     │     │  :3000            │   │
+│  │  /assets/* → estático│     │  GET /api/health │   │
+│  │  /api/* ──proxy──→ │     │  POST /api/auth/* │   │
+│  │                      │     │  GET/POST /api/tasks│ │
+│  └──────────────────────┘     │  DELETE /api/tasks│ │
+│                               └──────────────────┘   │
+│                                        │              │
+│                                        ▼              │
+│                               Turso (libSQL cloud)     │
+│                               "devops-andresgaibor    │
+│                                .turso.io"             │
+└──────────────────────────────────────────────────────┘
+```
+
+### Los archivos
+
+**`Dockerfile`** — Build multi-etapa del frontend:
+
+```dockerfile
+FROM oven/bun:1 AS build         # 1. Imagen con Bun
+WORKDIR /app
+COPY package.json bun.lock ./    # 2. Solo dependencias primero (cache)
+RUN bun install --frozen-lockfile
+COPY . .                         # 3. Código fuente
+RUN bun run build                # 4. Compila React → client/dist/
+
+FROM nginx:alpine                # 5. Imagen final mínima
+COPY --from=build /app/client/dist /usr/share/nginx/html
+COPY infra/nginx/default.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+```
+
+**`Dockerfile.api`** — Build del backend:
+
+```dockerfile
+FROM oven/bun:1
+WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+COPY . .
+EXPOSE 3000
+CMD ["bun", "server/index.ts"]   # Ejecuta el servidor Hono
+```
+
+**`infra/nginx/default.conf`** — Configuración de Nginx:
+
+```nginx
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+
+    location /api/ {
+        proxy_pass http://api:3000;   # Proxy reverso al contenedor api
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;  # SPA: todo al index
+    }
+}
+```
+
+**`docker-compose.yml`** — Orquestación de ambos servicios:
+
+```yaml
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      TURSO_DATABASE_URL: ${TURSO_DATABASE_URL}    # Desde variables del host
+      TURSO_AUTH_TOKEN: ${TURSO_AUTH_TOKEN}
+    ports:
+      - "3000:3000"
+
+  web:
+    build: .
+    ports:
+      - "8080:80"                                   # Host:8080 → Nginx:80
+    depends_on:
+      - api                                         # Espera a que api esté listo
+```
+
+### Cómo ejecutar
+
+#### 1. Obtener credenciales de Turso
+
+Si no tienes una base de datos Turso, créala:
+
 ```bash
-export TURSO_DATABASE_URL=libsql://...
-export TURSO_AUTH_TOKEN=eyJ...
+# Instalar Turso CLI
+curl -sSfL https://get.turso.tech | bash
+
+# Iniciar sesión
+turso auth login
+
+# Crear base de datos
+turso db create taskflow-db
+
+# Obtener URL y token
+turso db show taskflow-db --url          # → libsql://...
+turso db create-token taskflow-db        # → eyJ...
+```
+
+#### 2. Exportar variables de entorno
+
+```bash
+export TURSO_DATABASE_URL=libsql://taskflow-db.turso.io
+export TURSO_AUTH_TOKEN=eyJhbGciOiJFZERTQSIs...
+```
+
+> ⚠️ Estas variables se pasan al contenedor `api`. Sin ellas el backend no puede conectarse a la base de datos.
+
+#### 3. Construir y ejecutar
+
+```bash
 docker compose up --build
 ```
 
-Disponible en `http://localhost:8080`.
+Docker Compose construye ambas imágenes y las inicia. La primera vez descarga `oven/bun:1` y `nginx:alpine`.
 
-Dos servicios:
-- **api** — Backend Hono con Bun (puerto 3000)
-- **web** — Nginx con frontend estático + proxy `/api/` al backend
+#### 4. Abrir la aplicación
 
 ```
-Navegador → http://localhost:8080
-  ├── / → index.html (frontend)
-  └── /api/* → proxy_pass → api:3000
+http://localhost:8080
 ```
 
-Detener:
+#### 5. Detener
 
 ```bash
 docker compose down
 ```
+
+### Cómo funciona en producción
+
+1. **Frontend compilado**: Durante el build, Vite compila React con `VITE_API_URL=/api` (desde `client/.env.production`). Esto hace que todas las llamadas a la API usen rutas relativas como `/api/auth/login` en vez de `http://localhost:3000/api/auth/login`.
+
+2. **Nginx sirve el frontend**: Cuando abres `http://localhost:8080`, Nginx te devuelve `index.html` y los assets compilados.
+
+3. **Nginx proxea la API**: Cualquier ruta que empiece con `/api/` (como `/api/health`, `/api/auth/login`) es reenviada al contenedor `api:3000` usando `proxy_pass`. El navegador nunca ve el puerto 3000.
+
+4. **Backend responde**: El contenedor `api` ejecuta el servidor Hono con Bun, recibe las requests proxeadas, consulta Turso y devuelve JSON.
+
+5. **Base de datos en la nube**: Turso corre en la infraestructura de Turso (no en Docker). Ambos contenedores se conectan a la misma base de datos remota.
+
+### Diferencia entre desarrollo y producción
+
+| Aspecto | Desarrollo | Producción |
+|---------|-----------|------------|
+| Frontend | Vite dev server (hot reload) | Archivos estáticos compilados |
+| Backend | `tsx watch` (recarga automática) | `bun server/index.ts` |
+| API URL | `http://localhost:3000` (directo) | `/api` (a través de Nginx) |
+| Puertos | 5173 + 3000 | 8080 (Nginx unificado) |
+| Runtime | Bun o Node.js | Solo Bun en Docker |
 
 ## Estructura
 
