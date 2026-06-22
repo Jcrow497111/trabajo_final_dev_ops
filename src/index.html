@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Task Manager</title>
+</head>
+<body>
+  <h1>Task Manager</h1>
+  <h2>Sistema de gestión de tareas</h2>
+
+  <p>Aplicación web para crear, editar, eliminar y gestionar estados de tareas.</p>
+
+  <ul>
+    <li>Crear tareas</li>
+    <li>Editar tareas</li>
+    <li>Eliminar tareas</li>
+    <li>Estados: pendiente, en progreso y completado</li>
+  </ul>
+
+  <hr>
+
+  <h3>Ambiente actual:</h3>
+  <p id="environment"></p>
+  <p id="version"></p>
+
+  <script src="config.js"></script>
+  <script>
+    document.getElementById("environment").innerText =
+      "Ambiente: " + window.APP_CONFIG.environment;
+
+    document.getElementById("version").innerText =
+      "Versión: " + window.APP_CONFIG.version;
+  </script>
+</body>
+</html>
+
