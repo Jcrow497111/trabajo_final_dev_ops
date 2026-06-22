@@ -25,18 +25,14 @@
 | CP-12: Eliminar última tarea | ✅ Exitosa | Mensaje vacío | Sin novedad | — |
 | CP-13: Ciclo de estados | ✅ Exitosa | Estados correctos | Ciclo completo funcional | — |
 
-## Comando de Ejecución
+## Comando de Ejecución (pendiente)
+
+Actualmente las pruebas se eliminaron durante la migración a monorepo. El comando para ejecutarlas una vez re-implementadas será:
 
 ```bash
 bun run test
 ```
 
-## Salida Esperada
+## Estado Actual
 
-```txt
-✓ src/tests/task-crud.test.tsx (7 tests)
-✓ src/tests/task-validation.test.tsx (6 tests)
-
-Test Files  2 passed (2)
-     Tests  13 passed (13)
-```
+Tras la migración a la estructura `client/` + `server/`, los tests deben re-implementarse en `client/src/tests/`. El plan y casos de prueba están definidos en `docs/plan-pruebas.md` y `docs/casos-prueba.md`.

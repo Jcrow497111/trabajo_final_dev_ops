@@ -34,13 +34,11 @@ Construyendo la aplicación...
 
 ## 3. Pruebas Realizadas
 
-```
-> bun run test
-✓ src/tests/task-crud.test.tsx (7 tests)
-✓ src/tests/task-validation.test.tsx (6 tests)
+Las pruebas se ejecutaron exitosamente durante la fase inicial del proyecto (13/13). Tras la migración a monorepo (cliente/servidor), los archivos de prueba están pendientes de re-implementación. El pipeline CI está preparado para ejecutarlas automáticamente.
 
-Test Files  2 passed (2)
-     Tests  13 passed (13)
+```bash
+# Comando una vez re-implementadas:
+bun run test
 ```
 
 ---

@@ -189,6 +189,7 @@ El pipeline de GitHub Actions ejecuta correctamente:
 - Las tareas no están asociadas a usuarios específicos (columna `user_id` existe pero no se usa en consultas)
 - No hay paginación en la lista de tareas
 - No hay recuperación de contraseña
+- Las pruebas unitarias se eliminaron durante la migración a monorepo; deben re-implementarse
 
 ### Mejoras propuestas
 
