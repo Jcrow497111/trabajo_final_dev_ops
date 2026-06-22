@@ -2,6 +2,20 @@
 
 Aplicación web full-stack de gestión de tareas construida con **Bun + React + TypeScript + Hono + Turso**.
 
+## Capturas de Pantalla
+
+| Landing | Dashboard |
+|---------|-----------|
+| ![Landing](screenshots/taskflow-landing.png) | ![Dashboard](screenshots/taskflow-dashboard.png) |
+
+| Tareas | Kanban |
+|--------|--------|
+| ![Tareas](screenshots/taskflow-tasks.png) | ![Kanban](screenshots/taskflow-kanban.png) |
+
+| Estadísticas | Login | Registro |
+|-------------|-------|----------|
+| ![Estadísticas](screenshots/taskflow-stats.png) | ![Login](screenshots/taskflow-login.png) | ![Registro](screenshots/taskflow-register.png) |
+
 ## Tecnologías
 
 | Tecnología | Propósito |
