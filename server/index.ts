@@ -2,12 +2,13 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import tasksApi from "./routes/tasks";
 import statsApi from "./routes/stats";
-import { client } from "./db";
+import authApi from "./routes/auth";
+import { db, client } from "./db";
 
 const app = new Hono();
 
 app.use("/api/*", cors({
-  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+  origin: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174"],
   credentials: true,
 }));
 
@@ -20,6 +21,7 @@ app.get("/api/health", async (c) => {
   }
 });
 
+app.route("/api/auth", authApi);
 app.route("/api/tasks", tasksApi);
 app.route("/api/stats", statsApi);
 

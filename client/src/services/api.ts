@@ -8,10 +8,22 @@ export class ApiError extends Error {
   }
 }
 
+let authToken: string | null = null;
+
+export function setToken(token: string | null) {
+  authToken = token;
+}
+
+function buildHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+  return headers;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const url = `${API_URL}${path}`;
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
+    headers: buildHeaders(),
     ...options,
   });
 
@@ -33,4 +45,5 @@ export const api = {
     request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
   delete: <T>(path: string) =>
     request<T>(path, { method: "DELETE" }),
+  setToken,
 };

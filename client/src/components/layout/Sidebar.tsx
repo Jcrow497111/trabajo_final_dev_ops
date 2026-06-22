@@ -30,7 +30,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center">
               <ListTodo size={18} className="text-white" />
             </div>
-            <span className="font-bold text-gray-900">Task Manager</span>
+            <span className="font-bold text-gray-900">TaskFlow</span>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 lg:hidden">
             <X size={20} className="text-gray-500" />
